@@ -305,7 +305,7 @@
             <h2 class="panel-title">Waste Types We Classify</h2>
             <div class="waste-types">
                 <div class="waste-type">
-                    <i>♻</i>
+                    <i>♻️</i>
                     <div>Recyclable</div>
                 </div>
                 <div class="waste-type">
@@ -313,7 +313,7 @@
                     <div>Organic</div>
                 </div>
                 <div class="waste-type">
-                    <i>🗑</i>
+                    <i>🗑️</i>
                     <div>Landfill</div>
                 </div>
                 <div class="waste-type">
@@ -380,7 +380,7 @@
                 console.log('Model loaded successfully');
             } catch (error) {
                 console.error('Error loading model:', error);
-                labelContainer.innerHTML = <div class="result-item">Error loading model: ${error.message}</div>;
+                labelContainer.innerHTML = `<div class="result-item">Error loading model: ${error.message}</div>`;
             }
         }
         
@@ -426,9 +426,9 @@
                 animationFrameId = requestAnimationFrame(loop);
             } catch (error) {
                 console.error('Webcam error:', error);
-                labelContainer.innerHTML = <div class="result-item">Webcam error: ${error.message}</div>;
+                labelContainer.innerHTML = `<div class="result-item">Webcam error: ${error.message}</div>`;
                 webcamOverlay.style.display = 'flex';
-                webcamOverlay.innerHTML = <p>Webcam access denied</p><p>Please allow camera access to use this feature</p>;
+                webcamOverlay.innerHTML = `<p>Webcam access denied</p><p>Please allow camera access to use this feature</p>`;
             }
         }
         
@@ -611,7 +611,7 @@
                 }
             } catch (error) {
                 console.error('Classification error:', error);
-                uploadResults.innerHTML = <div class="result-item">Error: ${error.message}</div>;
+                uploadResults.innerHTML = `<div class="result-item">Error: ${error.message}</div>`;
             }
         }
         
