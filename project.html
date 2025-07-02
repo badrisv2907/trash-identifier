@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waste Classification System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .panel-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .webcam-container {
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #webcam-video {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            transform: scaleX(-1); /* Mirror the video */
+        }
+        
+        #webcam-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        
+        .webcam-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        #stop-btn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+        }
+        
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #4facfe;
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+            color: #4facfe;
+        }
+        
+        #image-upload {
+            display: none;
+        }
+        
+        .results {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .waste-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .waste-type {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .waste-type:hover {
+            transform: translateY(-5px);
+            background: rgba(79, 172, 254, 0.2);
+        }
+        
+        .waste-type i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Waste Classification System</h1>
+            <p class="subtitle">Using AI to identify different types of waste materials for better recycling and waste management. Classify waste using your webcam or upload an image.</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="panel">
+                <h2 class="panel-title">Webcam Classification</h2>
+                
+                <div class="webcam-container">
+                    <video id="webcam-video" autoplay playsinline></video>
+                    <canvas id="webcam-canvas"></canvas>
+                    <div class="webcam-overlay" id="webcam-overlay">
+                        <p>Webcam is not active</p>
+                        <p>Click "Start Webcam" to begin classification</p>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button id="start-btn">Start Webcam</button>
+                    <button id="stop-btn" disabled>Stop Webcam</button>
+                </div>
+                
+                <div class="results">
+                    <h3>Classification Results:</h3>
+                    <div id="label-container"></div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 class="panel-title">Image Upload</h2>
+                
+                <div class="upload-area" id="upload-container">
+                    <i>📁</i>
+                    <p>Click to upload an image or drag & drop</p>
+                    <p><small>Supported formats: JPG, PNG, GIF</small></p>
+                    <input type="file" id="image-upload" accept="image/*">
+                </div>
+                
+                <div class="results">
+                    <h3>Uploaded Image:</h3>
+                    <div id="uploaded-image-container" style="text-align: center; margin: 15px 0;"></div>
+                    <h3>Classification Results:</h3>
+                    <div id="upload-results"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2 class="panel-title">Waste Types We Classify</h2>
+            <div class="waste-types">
+                <div class="waste-type">
+                    <i>♻</i>
+                    <div>Recyclable</div>
+                </div>
+                <div class="waste-type">
+                    <i>🍃</i>
+                    <div>Organic</div>
+                </div>
+                <div class="waste-type">
+                    <i>🗑</i>
+                    <div>Landfill</div>
+                </div>
+                <div class="waste-type">
+                    <i>🔋</i>
+                    <div>E-Waste</div>
+                </div>
+                <div class="waste-type">
+                    <i>🧪</i>
+                    <div>Hazardous</div>
+                </div>
+                <div class="waste-type">
+                    <i>🧴</i>
+                    <div>Plastic</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Waste Classification System using Teachable Machine & TensorFlow.js</p>
+            <p>Helping create a cleaner, more sustainable planet</p>
+        </footer>
+    </div>
+
+    <!-- Load TensorFlow.js and Teachable Machine libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    
+    <script>
+        // DOM elements
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const uploadContainer = document.getElementById('upload-container');
+        const imageUpload = document.getElementById('image-upload');
+        const uploadedImageContainer = document.getElementById('uploaded-image-container');
+        const labelContainer = document.getElementById('label-container');
+        const uploadResults = document.getElementById('upload-results');
+        const webcamVideo = document.getElementById('webcam-video');
+        const webcamCanvas = document.getElementById('webcam-canvas');
+        const webcamOverlay = document.getElementById('webcam-overlay');
+        
+        // Model variables
+        const modelURL = "https://teachablemachine.withgoogle.com/models/4KMmSvmjX/";
+        let model, maxPredictions;
+        let isWebcamActive = false;
+        let animationFrameId = null;
+        
+        // Initialize the model
+        async function initModel() {
+            try {
+                const modelJson = modelURL + "model.json";
+                const metadataJson = modelURL + "metadata.json";
+                
+                // Show loading state
+                labelContainer.innerHTML = '<div class="result-item">Loading model...</div>';
+                
+                // Load the model and metadata
+                model = await tmImage.load(modelJson, metadataJson);
+                maxPredictions = model.getTotalClasses();
+                
+                // Update UI
+                labelContainer.innerHTML = '<div class="result-item">Model loaded. Click "Start Webcam" to begin.</div>';
+                startBtn.disabled = false;
+                
+                console.log('Model loaded successfully');
+            } catch (error) {
+                console.error('Error loading model:', error);
+                labelContainer.innerHTML = <div class="result-item">Error loading model: ${error.message}</div>;
+            }
+        }
+        
+        // Set up webcam
+        async function setupWebcam() {
+            try {
+                // Hide overlay and show video
+                webcamOverlay.style.display = 'none';
+                
+                // Request webcam access
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: "environment", // Prefer rear camera
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
+                });
+                
+                // Set video source
+                webcamVideo.srcObject = stream;
+                
+                // Wait for video to load metadata
+                await new Promise((resolve) => {
+                    webcamVideo.onloadedmetadata = () => {
+                        webcamVideo.width = webcamVideo.videoWidth;
+                        webcamVideo.height = webcamVideo.videoHeight;
+                        resolve();
+                    };
+                });
+                
+                // Setup canvas
+                webcamCanvas.width = webcamVideo.videoWidth;
+                webcamCanvas.height = webcamVideo.videoHeight;
+                
+                // Update UI
+                isWebcamActive = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+                console.log('Webcam started successfully');
+                
+                // Start the prediction loop
+                animationFrameId = requestAnimationFrame(loop);
+            } catch (error) {
+                console.error('Webcam error:', error);
+                labelContainer.innerHTML = <div class="result-item">Webcam error: ${error.message}</div>;
+                webcamOverlay.style.display = 'flex';
+                webcamOverlay.innerHTML = <p>Webcam access denied</p><p>Please allow camera access to use this feature</p>;
+            }
+        }
+        
+        // Prediction loop for webcam
+        async function loop() {
+            if (!isWebcamActive) return;
+            
+            // Draw webcam frame to canvas
+            const ctx = webcamCanvas.getContext('2d');
+            ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
+            
+            // Get predictions
+            await predict();
+            
+            // Continue the loop
+            animationFrameId = requestAnimationFrame(loop);
+        }
+        
+        // Run prediction on webcam frame
+        async function predict() {
+            if (!model || !isWebcamActive) return;
+            
+            // Get predictions
+            const predictions = await model.predict(webcamCanvas);
+            
+            // Clear previous results
+            labelContainer.innerHTML = '';
+            
+            // Sort predictions by probability (highest first)
+            predictions.sort((a, b) => b.probability - a.probability);
+            
+            // Display results
+            for (let i = 0; i < Math.min(maxPredictions, 3); i++) {
+                const classPrediction = predictions[i];
+                const probability = classPrediction.probability.toFixed(2);
+                
+                // Create result item
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                resultItem.innerHTML = `
+                    <div>${classPrediction.className}</div>
+                    <div>${(probability * 100).toFixed(0)}%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${probability * 100}%"></div>
+                    </div>
+                `;
+                
+                labelContainer.appendChild(resultItem);
+            }
+        }
+        
+        // Stop webcam
+        function stopWebcam() {
+            if (isWebcamActive) {
+                isWebcamActive = false;
+                cancelAnimationFrame(animationFrameId);
+                
+                // Stop video streams
+                if (webcamVideo.srcObject) {
+                    const tracks = webcamVideo.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                    webcamVideo.srcObject = null;
+                }
+                
+                // Update UI
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                webcamOverlay.style.display = 'flex';
+                webcamOverlay.innerHTML = '<p>Webcam stopped</p><p>Click "Start Webcam" to begin again</p>';
+                
+                // Clear results
+                labelContainer.innerHTML = '<div class="result-item">Webcam stopped</div>';
+                
+                console.log('Webcam stopped successfully');
+            }
+        }
+        
+        // Handle image uploads
+        function setupUpload() {
+            // Click handler for upload area
+            uploadContainer.addEventListener('click', () => {
+                imageUpload.click();
+            });
+            
+            // Drag and drop handlers
+            uploadContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadContainer.style.backgroundColor = 'rgba(79, 172, 254, 0.2)';
+            });
+            
+            uploadContainer.addEventListener('dragleave', () => {
+                uploadContainer.style.backgroundColor = '';
+            });
+            
+            uploadContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadContainer.style.backgroundColor = '';
+                
+                if (e.dataTransfer.files.length) {
+                    handleImageUpload(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // File input change handler
+            imageUpload.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+        }
+        
+        // Process uploaded image
+        async function handleImageUpload(file) {
+            if (!file.type.match('image.*')) {
+                alert('Please upload an image file (JPG, PNG, GIF)');
+                return;
+            }
+            
+            // Display uploaded image
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    // Display image
+                    uploadedImageContainer.innerHTML = '';
+                    const displayImg = document.createElement('img');
+                    displayImg.src = e.target.result;
+                    displayImg.style.maxWidth = '100%';
+                    displayImg.style.maxHeight = '300px';
+                    displayImg.style.borderRadius = '10px';
+                    uploadedImageContainer.appendChild(displayImg);
+                    
+                    // Classify image
+                    await classifyImage(img);
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Classify uploaded image
+        async function classifyImage(img) {
+            if (!model) {
+                uploadResults.innerHTML = '<div class="result-item">Model not loaded yet. Please wait.</div>';
+                return;
+            }
+            
+            // Show loading state
+            uploadResults.innerHTML = '<div class="result-item">Classifying image...</div>';
+            
+            try {
+                // Get predictions
+                const predictions = await model.predict(img);
+                
+                // Clear previous results
+                uploadResults.innerHTML = '';
+                
+                // Sort predictions by probability (highest first)
+                predictions.sort((a, b) => b.probability - a.probability);
+                
+                // Display results
+                for (let i = 0; i < Math.min(maxPredictions, 5); i++) {
+                    const classPrediction = predictions[i];
+                    const probability = classPrediction.probability.toFixed(2);
+                    
+                    // Create result item
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    resultItem.innerHTML = `
+                        <div>${classPrediction.className}</div>
+                        <div>${(probability * 100).toFixed(0)}%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${probability * 100}%"></div>
+                        </div>
+                    `;
+                    
+                    uploadResults.appendChild(resultItem);
+                }
+            } catch (error) {
+                console.error('Classification error:', error);
+                uploadResults.innerHTML = <div class="result-item">Error: ${error.message}</div>;
+            }
+        }
+        
+        // Event Listeners
+        startBtn.addEventListener('click', setupWebcam);
+        stopBtn.addEventListener('click', stopWebcam);
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            initModel();
+            setupUpload();
+        });
+    </script>
+</body>
+</html>
